@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Keybaord Typing</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      padding: 30px;
+      background-color: #f9f9f9;
+    }
+    input, button {
+      padding: 10px;
+      margin: 8px 0;
+      font-size: 16px;
+    }
+    #wordDisplay {
+      margin: 15px 0;
+      padding: 12px;
+      border: 2px dashed #aaa;
+      background-color: #fff;
+      min-height: 40px;
+    }
+    .success { color: green; font-weight: bold; }
+    .fail { color: crimson; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <h2>Ready, Set, Type!</h2>
+
+  <input type="text" id="newWord" placeholder="Add a word">
+  <button id="submitWord">➕ Add</button>
+
+  <div id="wordDisplay">Wala pay Words.</div>
+
+  <button id="launchGame" disabled>🚀 Begin</button>
+
+  <div id="gameZone" style="display:none;">
+    <p>🔤 Type the word below:</p>
+    <h3 id="targetWord"></h3>
+    <input type="text" id="userInput" placeholder="Start typing...">
+    <div id="feedback"></div>
+  </div>
+
+  <script> 
+    function debounce(fn, wait) {
+      let timer;
+      return function(...args) {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn.apply(this, args), wait);
+      };
+    }
+
+    function throttle(fn, interval) {
+      let lastTime = 0;
+      return function(...args) {
+        const now = Date.now();
+        if (now - lastTime >= interval) {
+          lastTime = now;
+          fn.apply(this, args);
+        }
+      };
+    }
+
+    const wordBank = [];
+    let activeWord = "";
+
+    const inputField = document.getElementById("newWord");
+    const submitBtn = document.getElementById("submitWord");
+    const wordDisplay = document.getElementById("wordDisplay");
+    const launchBtn = document.getElementById("launchGame");
+    const gameZone = document.getElementById("gameZone");
+    const targetWord = document.getElementById("targetWord");
+    const userInput = document.getElementById("userInput");
+    const feedback = document.getElementById("feedback");
+
+    submitBtn.addEventListener("click", () => {
+      const word = inputField.value.trim();
+      if (word) {
+        wordBank.push(word);
+        wordDisplay.textContent = wordBank.join(" | ");
+        launchBtn.disabled = false;
+        inputField.value = "";
+      }
+    });
+
+    launchBtn.addEventListener("click", () => {
+      gameZone.style.display = "block";
+      presentWord();
+    });
+
+    function presentWord() {
+      activeWord = wordBank[Math.floor(Math.random() * wordBank.length)];
+      targetWord.textContent = activeWord;
+      userInput.value = "";
+      feedback.textContent = "";
+    }
+
+    function validateInput() {
+      const typed = userInput.value.trim();
+      if (!typed) {
+        feedback.textContent = "";
+        return;
+      }
+
+      if (typed.toLowerCase() === activeWord.toLowerCase()) {
+        feedback.innerHTML = `<span class="success">✅ SAKTO!</span>`;
+      } else {
+        feedback.innerHTML = `<span class="fail">❌ Balika kay sayop</span>`;
+      }
+    }
+
+    const debouncedCheck = debounce(validateInput, 500);
+    const throttledCheck = throttle(validateInput, 1000);
+
+    userInput.addEventListener("input", debouncedCheck);
+    userInput.addEventListener("input", throttledCheck);
+  </script>
+
+</body>
+</html>
